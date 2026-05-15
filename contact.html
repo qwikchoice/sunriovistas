@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Now — SunRio Vistas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">SunRio Vistas</a>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="experiences.html">Experiences</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html" class="btn-nav">Book Now</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <h1>Book Your Stay</h1>
+    <p>Tell us about your family and we'll craft the perfect SunRio Vistas experience for you.</p>
+  </section>
+
+  <section class="contact-section container">
+    <div class="contact-grid">
+
+      <div class="contact-info">
+        <h2>Get in Touch</h2>
+        <p>We're based in Folsom, California — just minutes from Folsom Lake and the American River Parkway. Reach out to start planning your glamping adventure.</p>
+        <div class="contact-detail">
+          <span>📍</span>
+          <span>Folsom, CA 95630</span>
+        </div>
+        <div class="contact-detail">
+          <span>📧</span>
+          <span>hello@sunriovistas.com</span>
+        </div>
+        <div class="contact-detail">
+          <span>📞</span>
+          <span>(916) 555-0198</span>
+        </div>
+        <div class="contact-detail">
+          <span>🕐</span>
+          <span>Mon–Fri: 9am – 6pm PST</span>
+        </div>
+      </div>
+
+      <form action="#" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fname">First Name</label>
+            <input type="text" id="fname" name="fname" placeholder="Jane" required />
+          </div>
+          <div class="form-group">
+            <label for="lname">Last Name</label>
+            <input type="text" id="lname" name="lname" placeholder="Smith" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="jane@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone" placeholder="(916) 555-0100" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkin">Check-in Date</label>
+            <input type="date" id="checkin" name="checkin" required />
+          </div>
+          <div class="form-group">
+            <label for="checkout">Check-out Date</label>
+            <input type="date" id="checkout" name="checkout" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="guests">Number of Guests</label>
+          <select id="guests" name="guests">
+            <option>1–2</option>
+            <option>3–4</option>
+            <option>5–6</option>
+            <option>7+</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="experiences">Experiences You're Interested In</label>
+          <select id="experiences" name="experiences">
+            <option>Build It Camp</option>
+            <option>Learn in Nature</option>
+            <option>Audio Tours</option>
+            <option>Drone Photography</option>
+            <option>AI 101 Workshop</option>
+            <option>RV Training</option>
+            <option>Mix of Everything!</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Tell Us More</label>
+          <textarea id="message" name="message" placeholder="Ages of kids, special requests, questions..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; text-align:center; border:none; cursor:pointer;">
+          Send Booking Request
+        </button>
+      </form>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p><strong>SunRio Vistas</strong> — Folsom, CA</p>
+      <p>© 2026 SunRio Vistas. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
