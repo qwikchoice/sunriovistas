@@ -1,0 +1,37 @@
+import type { NextAuthOptions } from 'next-auth'
+import GoogleProvider from 'next-auth/providers/google'
+import FacebookProvider from 'next-auth/providers/facebook'
+import AppleProvider from 'next-auth/providers/apple'
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId:     process.env.GOOGLE_CLIENT_ID     ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+    }),
+    FacebookProvider({
+      clientId:     process.env.FACEBOOK_CLIENT_ID     ?? '',
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? '',
+    }),
+    AppleProvider({
+      clientId:    process.env.APPLE_CLIENT_ID      ?? '',
+      clientSecret: process.env.APPLE_PRIVATE_KEY   ?? '',
+    }),
+  ],
+  pages: {
+    signIn: '/login',
+    error:  '/login',
+  },
+  callbacks: {
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        (session.user as { id?: string }).id = token.sub
+      }
+      return session
+    },
+    async jwt({ token }) {
+      return token
+    },
+  },
+  session: { strategy: 'jwt' },
+}

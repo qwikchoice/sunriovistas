@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, ArrowRight, Info, Zap } from 'lucide-react'
+import StripeBadge from '@/components/shared/StripeBadge'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { rvs } from '@/lib/data/rvs'
@@ -313,11 +314,14 @@ export default function PricingPage() {
               ))}
             </div>
 
-            <div className="mt-6 bg-white border border-earth-100 rounded-2xl p-4 flex items-center gap-3 shadow-card">
-              <Zap size={16} className="text-brand-600 shrink-0" />
-              <p className="text-sm text-earth-700">
-                <span className="font-semibold">Powered by Stripe.</span> All payments are secure. Card details are stored encrypted by Stripe — we never see your full card number.
-              </p>
+            <div className="mt-6 bg-white border border-earth-100 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-card flex-wrap">
+              <div className="flex items-center gap-3">
+                <Zap size={16} className="text-brand-600 shrink-0" />
+                <p className="text-sm text-earth-700">
+                  All payments secure. Card details encrypted — we never see your full card number.
+                </p>
+              </div>
+              <StripeBadge />
             </div>
           </div>
         </section>

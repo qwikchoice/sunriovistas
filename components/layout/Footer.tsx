@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Mail, MapPin, Instagram, Facebook } from 'lucide-react'
+import StripeBadge from '@/components/shared/StripeBadge'
 
 const rvLinks     = [
   { href: '/rvs/lunaris',   label: '🌙 Lunaris' },
@@ -105,8 +106,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-earth-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-earth-500">
+        <div className="border-t border-earth-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-earth-500">
           <p>© {new Date().getFullYear()} SunRio Vistas. All rights reserved.</p>
+          <StripeBadge />
           <p>Folsom, CA · Northern California Glamping</p>
         </div>
       </div>

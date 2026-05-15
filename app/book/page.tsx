@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import StripeBadge from '@/components/shared/StripeBadge'
 import Link from 'next/link'
 import {
   Check, ChevronRight, ChevronLeft, Calendar, Users,
@@ -468,9 +469,10 @@ function StepReview({
         {submitting ? 'Submitting...' : 'Submit Booking Request'}
       </button>
 
-      <p className="text-center text-xs text-earth-400">
-        No charge until approval · Secure · Manual review within 24 hours
-      </p>
+      <div className="flex items-center justify-center gap-4 flex-wrap">
+        <p className="text-xs text-earth-400">No charge until approval · Manual review within 24 hours</p>
+        <StripeBadge />
+      </div>
     </div>
   )
 }

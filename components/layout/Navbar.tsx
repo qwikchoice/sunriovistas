@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import Image from 'next/image'
+import { Menu, X, User } from 'lucide-react'
+import { useSession, signIn } from 'next-auth/react'
 
 const links = [
   { href: '/rvs',          label: 'Our RVs' },
@@ -16,6 +18,7 @@ const links = [
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false)
   const [menuOpen, setMenuOpen]   = useState(false)
+  const { data: session }         = useSession()
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20)
@@ -46,7 +49,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -64,6 +67,29 @@ export default function Navbar() {
             >
               Check Availability
             </Link>
+            {/* Account / Login */}
+            {session ? (
+              <Link
+                href="/account"
+                className={`w-8 h-8 rounded-full overflow-hidden border-2 border-brand-400 hover:border-brand-500 transition-all shrink-0 ${scrolled ? '' : ''}`}
+                title={session.user?.name ?? 'Account'}
+              >
+                {session.user?.image ? (
+                  <Image src={session.user.image} alt="" width={32} height={32} className="object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-brand-100 flex items-center justify-center">
+                    <User size={14} className="text-brand-700" />
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <button
+                onClick={() => signIn()}
+                className={`text-sm font-medium transition-colors hover:text-brand-600 ${scrolled ? 'text-earth-700' : 'text-white/90'}`}
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -99,6 +125,22 @@ export default function Navbar() {
           >
             Check Availability
           </Link>
+          {session ? (
+            <Link
+              href="/account"
+              className="block text-center border border-earth-200 text-earth-700 font-semibold py-3 rounded-full mt-2 hover:border-brand-300 transition-colors text-sm"
+              onClick={() => setMenuOpen(false)}
+            >
+              My Account
+            </Link>
+          ) : (
+            <button
+              onClick={() => { setMenuOpen(false); signIn() }}
+              className="block w-full text-center border border-earth-200 text-earth-700 font-semibold py-3 rounded-full mt-2 hover:border-brand-300 transition-colors text-sm"
+            >
+              Sign In
+            </button>
+          )}
         </div>
       )}
     </nav>
