@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER
+  BOOKING_MANAGER
+  SUPER_ADMIN
+}
+
+enum BookingStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED_AWAITING_DEPOSIT
+  DEPOSIT_PAID
+  CONFIRMED
+  REJECTED
+  CANCELED
+  COMPLETED
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL
+  REFUND
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ─── NextAuth adapter tables ──────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  bookings        Booking[]
+  termsAcceptances TermsAcceptance[]
+}
+
+// ─── RV ───────────────────────────────────────────────────────────────────────
+
+model RV {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  emoji       String
+  tagline     String?
+  description String? @db.Text
+  sleeps      Int     @default(4)
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  priceRules   RVPriceRule[]
+  bookings     Booking[]
+  blockouts    CalendarBlockout[]
+}
+
+model RVPriceRule {
+  id          String   @id @default(cuid())
+  rvId        String
+  label       String?
+  startDate   DateTime
+  endDate     DateTime
+  nightlyRate Decimal  @db.Decimal(10, 2)
+  minNights   Int      @default(2)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  rv RV @relation(fields: [rvId], references: [id], onDelete: Cascade)
+}
+
+// ─── Destination ──────────────────────────────────────────────────────────────
+
+model Destination {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  name         String
+  region       String?
+  campFeeNote  String?
+  campFeeMin   Decimal? @db.Decimal(10, 2)
+  campFeeMax   Decimal? @db.Decimal(10, 2)
+  description  String? @db.Text
+  active       Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+// ─── AddOn ────────────────────────────────────────────────────────────────────
+
+model AddOn {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  label       String
+  description String?
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  priceRules   AddOnPriceRule[]
+  lineItems    BookingLineItem[]
+}
+
+model AddOnPriceRule {
+  id        String   @id @default(cuid())
+  addOnId   String
+  label     String?
+  startDate DateTime
+  endDate   DateTime
+  price     Decimal  @db.Decimal(10, 2)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  addOn AddOn @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+}
+
+// ─── Booking ──────────────────────────────────────────────────────────────────
+
+model Booking {
+  id            String        @id @default(cuid())
+  status        BookingStatus @default(DRAFT)
+  userId        String?
+  rvId          String
+  destinationId String
+
+  // Stay
+  checkIn       DateTime
+  checkOut      DateTime
+  nights        Int
+
+  // Guest snapshot
+  guestName     String
+  guestEmail    String
+  guestPhone    String?
+  groupSize     Int      @default(2)
+  specialRequests String? @db.Text
+
+  // Pricing snapshot
+  nightlyRate   Decimal  @db.Decimal(10, 2)
+  cleaningFee   Decimal  @db.Decimal(10, 2) @default(60)
+  addOnsTotal   Decimal  @db.Decimal(10, 2) @default(0)
+  subtotal      Decimal  @db.Decimal(10, 2)
+  taxAmount     Decimal  @db.Decimal(10, 2) @default(0)
+  totalAmount   Decimal  @db.Decimal(10, 2)
+  depositAmount Decimal  @db.Decimal(10, 2)
+  balanceAmount Decimal  @db.Decimal(10, 2)
+
+  // Terms acceptance
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+  termsUrl        String?
+  termsGuestIp    String?
+
+  // Admin
+  adminNotes    String?  @db.Text
+  approvedAt    DateTime?
+  approvedBy    String?
+  rejectedAt    DateTime?
+  rejectedReason String? @db.Text
+  canceledAt    DateTime?
+
+  // Stripe
+  stripePaymentLinkId      String?
+  stripeDepositSessionId   String?
+  stripeBalanceSessionId   String?
+  stripeDepositPaidAt      DateTime?
+  stripeBalancePaidAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User?       @relation(fields: [userId], references: [id])
+  rv          RV          @relation(fields: [rvId], references: [id])
+  destination Destination @relation(fields: [destinationId], references: [id])
+
+  lineItems        BookingLineItem[]
+  payments         Payment[]
+  termsAcceptances TermsAcceptance[]
+}
+
+// ─── BookingLineItem ──────────────────────────────────────────────────────────
+
+model BookingLineItem {
+  id        String  @id @default(cuid())
+  bookingId String
+  addOnId   String
+  label     String
+  price     Decimal @db.Decimal(10, 2)
+  quantity  Int     @default(1)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn   AddOn   @relation(fields: [addOnId], references: [id])
+}
+
+// ─── Payment ──────────────────────────────────────────────────────────────────
+
+model Payment {
+  id                  String        @id @default(cuid())
+  bookingId           String
+  type                PaymentType
+  status              PaymentStatus @default(PENDING)
+  amount              Decimal       @db.Decimal(10, 2)
+  currency            String        @default("usd")
+  stripeSessionId     String?       @unique
+  stripePaymentIntent String?
+  paidAt              DateTime?
+  refundedAt          DateTime?
+  refundAmount        Decimal?      @db.Decimal(10, 2)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+// ─── CalendarBlockout ─────────────────────────────────────────────────────────
+
+model CalendarBlockout {
+  id        String   @id @default(cuid())
+  rvId      String?
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+
+  rv RV? @relation(fields: [rvId], references: [id], onDelete: Cascade)
+}
+
+// ─── Terms ────────────────────────────────────────────────────────────────────
+
+model TermsDocument {
+  id          String   @id @default(cuid())
+  version     String   @unique
+  url         String
+  publishedAt DateTime @default(now())
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  acceptances TermsAcceptance[]
+}
+
+model TermsAcceptance {
+  id          String   @id @default(cuid())
+  bookingId   String
+  userId      String?
+  termsId     String
+  acceptedAt  DateTime @default(now())
+  guestIp     String?
+  userAgent   String?
+
+  booking Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user    User?         @relation(fields: [userId], references: [id])
+  terms   TermsDocument @relation(fields: [termsId], references: [id])
+}

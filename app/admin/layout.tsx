@@ -8,7 +8,7 @@ import { Camera, LayoutDashboard, Calendar, Settings, Lock, Eye, EyeOff } from '
 const NAV = [
   { href: '/admin',        label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/admin/photos', label: 'Photo Manager', icon: Camera          },
-  { href: '/admin/bookings-admin', label: 'Bookings',  icon: Calendar, disabled: true },
+  { href: '/admin/bookings', label: 'Bookings',  icon: Calendar },
   { href: '/admin/settings', label: 'Settings',   icon: Settings,  disabled: true },
 ]
 
@@ -30,6 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     e.preventDefault()
     if (pin === ADMIN_PIN) {
       sessionStorage.setItem('admin-authed', 'yes')
+      sessionStorage.setItem('admin-pin', pin)
       setAuthed(true)
       setError(false)
     } else {

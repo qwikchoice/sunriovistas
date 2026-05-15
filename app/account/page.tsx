@@ -2,44 +2,53 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
   User, Calendar, MapPin, LogOut, Settings, ArrowRight,
-  Clock, CheckCircle, XCircle, CreditCard, ChevronRight
+  Clock, CheckCircle, XCircle, CreditCard, ChevronRight, Loader2
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
-// ── Mock booking data (replace with DB fetch) ─────────────────────────────────
+// ── Types & status config ──────────────────────────────────────────────────────
 
-type BookingStatus = 'pending' | 'approved' | 'confirmed' | 'rejected' | 'completed' | 'canceled'
+type BookingStatus =
+  | 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED_AWAITING_DEPOSIT'
+  | 'DEPOSIT_PAID' | 'CONFIRMED' | 'REJECTED' | 'CANCELED' | 'COMPLETED'
 
-type MockBooking = {
+interface Booking {
   id: string
-  rv: string
-  rvEmoji: string
-  destination: string
+  status: BookingStatus
   checkIn: string
   checkOut: string
   nights: number
-  guests: number
-  status: BookingStatus
-  total: string
-  submittedAt: string
+  groupSize: number
+  totalAmount: string
+  depositAmount: string
+  createdAt: string
+  stripePaymentLinkId?: string
+  rv: { name: string; emoji: string }
+  destination: { name: string }
 }
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; icon: typeof Clock }> = {
-  pending:   { label: 'Pending Approval',          color: 'text-amber-700 bg-amber-50 border-amber-200',   icon: Clock         },
-  approved:  { label: 'Approved — Awaiting Payment', color: 'text-blue-700 bg-blue-50 border-blue-200',   icon: CreditCard    },
-  confirmed: { label: 'Confirmed',                  color: 'text-forest-700 bg-forest-50 border-forest-200', icon: CheckCircle },
-  rejected:  { label: 'Rejected',                  color: 'text-red-700 bg-red-50 border-red-200',         icon: XCircle      },
-  completed: { label: 'Completed',                  color: 'text-earth-700 bg-earth-50 border-earth-200',  icon: CheckCircle  },
-  canceled:  { label: 'Canceled',                  color: 'text-earth-400 bg-earth-50 border-earth-100',   icon: XCircle      },
+  DRAFT:                     { label: 'Draft',                   color: 'text-earth-600 bg-earth-50 border-earth-200',        icon: Clock        },
+  PENDING_APPROVAL:          { label: 'Pending Approval',        color: 'text-amber-700 bg-amber-50 border-amber-200',        icon: Clock        },
+  APPROVED_AWAITING_DEPOSIT: { label: 'Approved — Pay Deposit',  color: 'text-blue-700 bg-blue-50 border-blue-200',           icon: CreditCard   },
+  DEPOSIT_PAID:              { label: 'Deposit Paid',            color: 'text-indigo-700 bg-indigo-50 border-indigo-200',     icon: CheckCircle  },
+  CONFIRMED:                 { label: 'Confirmed',               color: 'text-forest-700 bg-forest-50 border-forest-200',    icon: CheckCircle  },
+  REJECTED:                  { label: 'Rejected',                color: 'text-red-700 bg-red-50 border-red-200',              icon: XCircle      },
+  CANCELED:                  { label: 'Canceled',                color: 'text-earth-400 bg-earth-50 border-earth-100',        icon: XCircle      },
+  COMPLETED:                 { label: 'Completed',               color: 'text-earth-700 bg-earth-50 border-earth-200',        icon: CheckCircle  },
 }
 
-function BookingCard({ booking }: { booking: MockBooking }) {
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function BookingCard({ booking }: { booking: Booking }) {
   const status = STATUS_CONFIG[booking.status]
   const Icon = status.icon
   return (
@@ -48,11 +57,11 @@ function BookingCard({ booking }: { booking: MockBooking }) {
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <p className="font-display text-lg font-bold text-earth-900 mb-1">
-              {booking.rvEmoji} {booking.rv}
+              {booking.rv.emoji} {booking.rv.name}
             </p>
             <div className="flex items-center gap-1.5 text-sm text-earth-500">
               <MapPin size={13} className="text-brand-500" />
-              {booking.destination}
+              {booking.destination.name}
             </div>
           </div>
           <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border ${status.color}`}>
@@ -63,9 +72,9 @@ function BookingCard({ booking }: { booking: MockBooking }) {
 
         <div className="grid grid-cols-3 gap-3 mb-4">
           {[
-            { label: 'Check-In',  value: booking.checkIn },
-            { label: 'Check-Out', value: booking.checkOut },
-            { label: 'Guests',    value: `${booking.guests} guest${booking.guests > 1 ? 's' : ''}` },
+            { label: 'Check-In',  value: fmtDate(booking.checkIn) },
+            { label: 'Check-Out', value: fmtDate(booking.checkOut) },
+            { label: 'Guests',    value: `${booking.groupSize} guest${booking.groupSize > 1 ? 's' : ''}` },
           ].map((f) => (
             <div key={f.label} className="bg-earth-50 rounded-2xl px-3 py-2.5">
               <p className="text-xs text-earth-400 mb-0.5">{f.label}</p>
@@ -77,17 +86,19 @@ function BookingCard({ booking }: { booking: MockBooking }) {
         <div className="flex items-center justify-between pt-4 border-t border-earth-100">
           <div>
             <p className="text-xs text-earth-400">Total</p>
-            <p className="font-bold text-earth-900">{booking.total}</p>
+            <p className="font-bold text-earth-900">${Number(booking.totalAmount).toFixed(2)}</p>
           </div>
-          {booking.status === 'approved' && (
-            <Link
-              href={`/book`}
+          {booking.status === 'APPROVED_AWAITING_DEPOSIT' && booking.stripePaymentLinkId && (
+            <a
+              href={booking.stripePaymentLinkId}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2.5 rounded-full transition-all"
             >
-              Pay Now <ArrowRight size={14} />
-            </Link>
+              Pay Deposit (${Number(booking.depositAmount).toFixed(2)}) <ArrowRight size={14} />
+            </a>
           )}
-          {booking.status === 'confirmed' && (
+          {booking.status === 'CONFIRMED' && (
             <span className="text-xs text-forest-700 font-semibold flex items-center gap-1">
               <CheckCircle size={13} /> All set!
             </span>
@@ -105,11 +116,27 @@ type AccountTab = 'bookings' | 'profile' | 'settings'
 export default function AccountPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [tab, setTab] = useState<AccountTab>('bookings')
+  const [tab, setTab]           = useState<AccountTab>('bookings')
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [bLoading, setBLoading] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login?callbackUrl=/account')
   }, [status, router])
+
+  const fetchBookings = useCallback(async () => {
+    setBLoading(true)
+    try {
+      const res = await fetch('/api/bookings')
+      if (res.ok) setBookings(await res.json())
+    } finally {
+      setBLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (status === 'authenticated' && tab === 'bookings') fetchBookings()
+  }, [status, tab, fetchBookings])
 
   if (status === 'loading') {
     return (
@@ -122,7 +149,6 @@ export default function AccountPage() {
   if (!session) return null
 
   const user = session.user
-  const mockBookings: MockBooking[] = [] // Replace with real fetch from DB
 
   return (
     <>
@@ -218,7 +244,11 @@ export default function AccountPage() {
                     </Link>
                   </div>
 
-                  {mockBookings.length === 0 ? (
+                  {bLoading ? (
+                    <div className="flex items-center gap-2 text-earth-500 py-8 justify-center">
+                      <Loader2 size={20} className="animate-spin" /> Loading bookings…
+                    </div>
+                  ) : bookings.length === 0 ? (
                     <div className="bg-white rounded-3xl border border-dashed border-earth-200 p-12 text-center">
                       <Calendar size={40} className="mx-auto text-earth-300 mb-4" />
                       <h3 className="font-display text-lg font-bold text-earth-900 mb-2">No Bookings Yet</h3>
@@ -234,7 +264,7 @@ export default function AccountPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {mockBookings.map((b) => <BookingCard key={b.id} booking={b} />)}
+                      {bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
                     </div>
                   )}
 
