@@ -14,6 +14,7 @@ const destLinks   = [
   { href: '/destinations/auburn',      label: 'Auburn / Gold Country' },
 ]
 const infoLinks   = [
+  { href: '/gallery',  label: 'Photo Gallery' },
   { href: '/pricing',  label: 'Pricing' },
   { href: '/faq',      label: 'FAQ' },
   { href: '/contact',  label: 'Contact Us' },

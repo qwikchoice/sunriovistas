@@ -10,6 +10,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { destinations, getDestinationBySlug } from '@/lib/data/destinations'
 import { rvs } from '@/lib/data/rvs'
+import DynamicGallery from '@/components/shared/DynamicGallery'
 
 type Props = { params: { slug: string } }
 
@@ -49,7 +50,8 @@ export default function DestinationDetailPage({ params }: Props) {
             sizes="100vw"
           />
           <div className={`absolute inset-0 bg-gradient-to-br ${dest.accentGrad}`} />
-          <div className="absolute inset-0 bg-gradient-to-t from-earth-950/85 via-transparent to-earth-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-earth-950/95 via-earth-950/20 to-earth-950/60" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 to-transparent" />
 
           {/* Back */}
           <div className="absolute top-24 left-6 lg:left-12 z-10">
@@ -143,22 +145,11 @@ export default function DestinationDetailPage({ params }: Props) {
                   <span className="inline-block text-brand-600 text-xs font-bold uppercase tracking-widest mb-4">
                     Gallery
                   </span>
-                  <div className="grid grid-cols-2 gap-3">
-                    {dest.gallery.map((img, i) => (
-                      <div
-                        key={i}
-                        className={`relative rounded-2xl overflow-hidden ${i === 0 ? 'col-span-2 h-72' : 'h-48'}`}
-                      >
-                        <Image
-                          src={img.src}
-                          alt={img.alt}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width:768px) 100vw, (max-width:1024px) 66vw, 50vw"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <DynamicGallery
+                    category="destination"
+                    entitySlug={dest.slug}
+                    fallbackGallery={dest.gallery}
+                  />
                 </div>
 
                 {/* Activities */}

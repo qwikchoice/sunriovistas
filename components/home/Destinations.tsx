@@ -86,7 +86,8 @@ export default function Destinations() {
               sizes="100vw"
             />
             <div className="absolute inset-0 bg-card-overlay" />
-            <div className="absolute inset-0 bg-gradient-to-r from-earth-950/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-earth-950/80 via-earth-950/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-earth-950/70 via-transparent to-transparent" />
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-10">
             <div className="flex items-center gap-2 mb-3">
@@ -96,10 +97,10 @@ export default function Destinations() {
                 Most Popular
               </span>
             </div>
-            <h3 className="font-display text-3xl lg:text-4xl font-bold text-white mb-3">
+            <h3 className="font-display text-3xl lg:text-4xl font-bold text-white mb-3" style={{textShadow:'0 2px 8px rgba(0,0,0,0.8)'}}>
               {featured.name}
             </h3>
-            <p className="text-white/75 text-base max-w-xl mb-4 leading-relaxed">{featured.description}</p>
+            <p className="text-white/90 text-base max-w-xl mb-4 leading-relaxed" style={{textShadow:'0 1px 4px rgba(0,0,0,0.7)'}}>{featured.description}</p>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-5">
               <span className="flex items-center gap-1.5 text-earth-300 text-sm">
                 <DollarSign size={13} className="text-brand-400" />
@@ -139,14 +140,15 @@ export default function Destinations() {
                   sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-card-overlay" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center gap-1.5 mb-1">
                   <MapPin size={11} className="text-brand-400" />
-                  <span className="text-brand-300 text-xs font-medium">{dest.short}</span>
+                  <span className="text-brand-300 text-xs font-medium" style={{textShadow:'0 1px 4px rgba(0,0,0,0.8)'}}>{dest.short}</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-white mb-1 leading-tight">{dest.name}</h3>
-                <p className="text-earth-300 text-xs flex items-center gap-1">
+                <h3 className="font-display text-lg font-bold text-white mb-1 leading-tight" style={{textShadow:'0 1px 6px rgba(0,0,0,0.9)'}}>{dest.name}</h3>
+                <p className="text-earth-300 text-xs flex items-center gap-1" style={{textShadow:'0 1px 4px rgba(0,0,0,0.8)'}}>
                   <DollarSign size={11} className="text-brand-400" />
                   {dest.feeNote}
                 </p>

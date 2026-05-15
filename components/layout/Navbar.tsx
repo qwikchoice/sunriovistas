@@ -7,8 +7,10 @@ import { Menu, X } from 'lucide-react'
 const links = [
   { href: '/rvs',          label: 'Our RVs' },
   { href: '/destinations', label: 'Destinations' },
+  { href: '/gallery',      label: 'Gallery' },
   { href: '/pricing',      label: 'Pricing' },
   { href: '/faq',          label: 'FAQ' },
+  { href: '/contact',      label: 'Contact' },
 ]
 
 export default function Navbar() {

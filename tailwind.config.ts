@@ -57,7 +57,7 @@ const config: Config = {
         'hero-gradient':
           'linear-gradient(135deg, rgba(29,20,10,0.85) 0%, rgba(45,31,18,0.70) 40%, rgba(180,83,9,0.35) 100%)',
         'card-overlay':
-          'linear-gradient(to top, rgba(29,20,10,0.90) 0%, rgba(29,20,10,0.30) 60%, transparent 100%)',
+          'linear-gradient(to top, rgba(10,6,2,0.96) 0%, rgba(15,8,3,0.75) 45%, rgba(20,12,4,0.40) 75%, rgba(20,12,4,0.15) 100%)',
       },
       animation: {
         'fade-up':   'fadeUp 0.6s ease-out forwards',
