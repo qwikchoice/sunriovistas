@@ -36,18 +36,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Minimum 2-night stay required' }, { status: 400 })
     }
 
-    // Validate RV + destination exist
+    // Accept either DB id or slug for RV + destination
     const [rv, destination] = await Promise.all([
-      db.rV.findUnique({ where: { id: rvId, active: true } }),
-      db.destination.findUnique({ where: { id: destinationId, active: true } }),
+      db.rV.findFirst({ where: { OR: [{ id: rvId }, { slug: rvId }], active: true } }),
+      db.destination.findFirst({ where: { OR: [{ id: destinationId }, { slug: destinationId }], active: true } }),
     ])
     if (!rv)          return NextResponse.json({ error: 'RV not found' }, { status: 404 })
     if (!destination) return NextResponse.json({ error: 'Destination not found' }, { status: 404 })
 
+    const resolvedRvId   = rv.id
+    const resolvedDestId = destination.id
+
     // Check blockouts
     const conflict = await db.calendarBlockout.findFirst({
       where: {
-        OR: [{ rvId }, { rvId: null }],
+        OR: [{ rvId: resolvedRvId }, { rvId: null }],
         startDate: { lte: checkOut },
         endDate:   { gte: checkIn },
       },
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
     // Check existing bookings
     const bookingConflict = await db.booking.findFirst({
       where: {
-        rvId,
+        rvId:   resolvedRvId,
         status: { in: ['PENDING_APPROVAL', 'APPROVED_AWAITING_DEPOSIT', 'DEPOSIT_PAID', 'CONFIRMED'] },
         checkIn:  { lt: checkOut },
         checkOut: { gt: checkIn },
@@ -70,18 +73,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Pricing
-    const nightlyRate = await resolveNightlyRate(rvId, checkIn, checkOut)
+    const nightlyRate = await resolveNightlyRate(resolvedRvId, checkIn, checkOut)
     if (nightlyRate === 0) {
       return NextResponse.json({ error: 'Pricing not available for selected dates' }, { status: 400 })
     }
 
-    // Add-ons
+    // Add-ons (accept id or slug)
     const addOnDetails: { addOnId: string; label: string; price: number }[] = []
-    for (const addOnId of addOnIds) {
-      const addOn = await db.addOn.findUnique({ where: { id: addOnId, active: true } })
+    for (const addOnIdOrSlug of addOnIds) {
+      const addOn = await db.addOn.findFirst({
+        where: { OR: [{ id: addOnIdOrSlug }, { slug: addOnIdOrSlug }], active: true },
+      })
       if (!addOn) continue
-      const price = await resolveAddOnPrice(addOnId, checkIn)
-      addOnDetails.push({ addOnId, label: addOn.label, price })
+      const price = await resolveAddOnPrice(addOn.id, checkIn)
+      addOnDetails.push({ addOnId: addOn.id, label: addOn.label, price })
     }
     const addOnsTotal = addOnDetails.reduce((s, a) => s + a.price, 0)
 
@@ -97,8 +102,8 @@ export async function POST(req: NextRequest) {
       data: {
         status:        'PENDING_APPROVAL',
         userId:        session?.user ? (session.user as { id?: string }).id : undefined,
-        rvId,
-        destinationId,
+        rvId:          resolvedRvId,
+        destinationId: resolvedDestId,
         checkIn,
         checkOut,
         nights,

@@ -579,10 +579,36 @@ function BookingWizard() {
 
   async function submit() {
     setSubmitting(true)
-    // Placeholder — wire to /api/bookings later
-    await new Promise((r) => setTimeout(r, 1200))
-    setSubmitting(false)
-    setStep(7)
+    try {
+      const res = await fetch('/api/bookings', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rvId:            booking.rvSlug,
+          destinationId:   booking.destSlug,
+          checkIn:         booking.checkIn,
+          checkOut:        booking.checkOut,
+          guestName:       booking.name,
+          guestEmail:      booking.email,
+          guestPhone:      booking.phone || undefined,
+          groupSize:       booking.guests,
+          specialRequests: booking.specialRequests || undefined,
+          addOnIds:        booking.addons,
+          termsVersion:    '1.0',
+          termsUrl:        '/terms',
+        }),
+      })
+      if (res.ok) {
+        setStep(7)
+      } else {
+        const data = await res.json()
+        alert(data.error ?? 'Something went wrong. Please try again.')
+      }
+    } catch {
+      alert('Network error. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // Summary sidebar data
