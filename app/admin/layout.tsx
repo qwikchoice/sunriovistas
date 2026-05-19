@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Camera, LayoutDashboard, Calendar, Settings, Lock, Eye, EyeOff } from 'lucide-react'
+import { Camera, LayoutDashboard, Calendar, Settings, Lock, Eye, EyeOff, Truck, MapPin, DollarSign, Image } from 'lucide-react'
 
 const NAV = [
-  { href: '/admin',        label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/admin/photos', label: 'Photo Manager', icon: Camera          },
-  { href: '/admin/bookings', label: 'Bookings',  icon: Calendar },
-  { href: '/admin/settings', label: 'Settings',   icon: Settings,  disabled: true },
+  { href: '/admin',              label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/admin/bookings',     label: 'Bookings',     icon: Calendar        },
+  { href: '/admin/rvs',          label: 'RVs',          icon: Truck           },
+  { href: '/admin/destinations', label: 'Destinations', icon: MapPin          },
+  { href: '/admin/pricing',      label: 'Pricing',      icon: DollarSign      },
+  { href: '/admin/photos',       label: 'Gallery',      icon: Image           },
+  { href: '/admin/settings',     label: 'Settings',     icon: Settings, disabled: true },
 ]
 
 const ADMIN_PIN = process.env.NEXT_PUBLIC_ADMIN_PIN ?? 'admin123'

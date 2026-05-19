@@ -14,7 +14,7 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background image */}
       <Image
-        src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1920&q=85"
+        src="https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1920&q=85"
         alt="Luxury glamping at Folsom Lake California"
         fill
         priority
@@ -22,11 +22,15 @@ export default function Hero() {
         sizes="100vw"
       />
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-earth-950/88 via-earth-900/72 to-brand-900/40" />
+      {/* Primary dark overlay — ensures text always readable */}
+      <div className="absolute inset-0 bg-earth-950/75" />
+      {/* Directional gradient — darker left (text side), lighter right */}
+      <div className="absolute inset-0 bg-gradient-to-r from-earth-950/60 via-earth-950/30 to-transparent" />
+      {/* Bottom-to-top fade for scroll indicator area */}
+      <div className="absolute inset-0 bg-gradient-to-t from-earth-950/40 via-transparent to-transparent" />
 
       {/* Noise texture */}
-      <div className="absolute inset-0 bg-noise opacity-30" />
+      <div className="absolute inset-0 bg-noise opacity-20" />
 
       {/* Ambient glow */}
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-600/10 rounded-full blur-3xl" />
@@ -92,8 +96,8 @@ export default function Hero() {
         <div className="w-px h-8 bg-gradient-to-b from-white/30 to-transparent" />
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white to-transparent" />
+      {/* Bottom fade to page background */}
+      <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-stone-50 to-transparent" />
     </section>
   )
 }
